@@ -393,6 +393,7 @@ io.sockets.on("connection", function (socket) {
 						var whisperId = keys[i];
 						found = true;
 						if (socket.id === whisperId) { //can't whisper to ourselves
+							
 							socket.emit("update", "You can't whisper to yourself.");
 						}
 						break;
@@ -403,7 +404,10 @@ io.sockets.on("connection", function (socket) {
 				var whisperTo = whisperStr[1];
 				var whisperMsg = whisperStr[2];
 				socket.emit("whisper",msTime, {name: "You"}, whisperMsg);
-				io.sockets.connected[whisperId].emit("whisper", msTime, people[socket.id], whisperMsg);
+				//console.log(io.sockets);
+				//console.log(whisperId);
+				//io.sockets.connected[whisperId].emit("whisper", msTime, people[socket.id], whisperMsg);
+				io.sockets.socket(whisperId).emit("whisper", msTime, people[socket.id], whisperMsg);
 			} else {
 				socket.emit("update", "Can't find " + whisperTo);
 			}
