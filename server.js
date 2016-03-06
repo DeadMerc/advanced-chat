@@ -262,9 +262,20 @@ function purge(s, action) {
 	}
 }
 
-io.sockets.on("connection", function (socket) {
+//add global room
+var id = uuid.v4();
+name = "Global room";
+roomPrivate = false;
+var room = new Room(name,"global",1,roomPrivate);
+rooms[id] = room;
+sizeRooms = _.size(rooms);
+chatHistory["Global room"] = [];
+//end add global room
 
+io.sockets.on("connection", function (socket) {
+	
 	socket.on("joinserver", function(name, device) {
+		console.log()
 		var exists = false;
 		var ownerRoomID = inRoomID = null;
 
@@ -285,7 +296,9 @@ io.sockets.on("connection", function (socket) {
 		} else {
 			people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device};
 			socket.emit("update", "You have connected to the server.");
-			io.sockets.emit("update", people[socket.id].name + " is online.")
+			io.sockets.emit("update", people[socket.id].name + " is online.");
+			
+			
 			sizePeople = _.size(people);
 			sizeRooms = _.size(rooms);
 			io.sockets.emit("update-people", {people: people, count: sizePeople});
@@ -315,6 +328,7 @@ io.sockets.on("connection", function (socket) {
 			io.sockets.in(socket.room).emit("isTyping", {isTyping: data, person: people[socket.id].name});
 	});
 	socket.on("inviteRoom", function(toName,msTime){
+		
 			//var whisperTo = whisperStr[1];
 		//console.log(socket.id);
 		if (typeof people[socket.id] !== "undefined" && people[socket.id].inroom) {	
@@ -332,7 +346,7 @@ io.sockets.on("connection", function (socket) {
 							}else{
 								socket.emit("whisper",msTime, {name: "You"},'Invite send.');
 								msg = 'I invite you to my room:"'+rooms[people[socket.id].inroom].name+'"  <button id="'+rooms[people[socket.id].inroom].id+'" class="joinRoomBtn btn btn-default btn-xs">Accept invite</button>';
-								io.sockets.connected[whisperId].emit("whisper", msTime, people[socket.id],msg);
+								io.sockets.socket(whisperId).emit("whisper", msTime, people[socket.id],msg);
 							}
 							break;
 						} 
@@ -478,8 +492,12 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("joinRoom", function(id) {
+		/*console.log(socket.room);
+		console.log(rooms);
+		console.log(chatHistory);*/
 		if (typeof people[socket.id] !== "undefined" && typeof rooms[id] !== "undefined") {
 			var room = rooms[id];
+			
 			if (socket.id === room.owner) {
 				socket.emit("update", "You are the owner of this room and you have already been joined.");
 			//}else if(room.private == true){
@@ -509,6 +527,8 @@ io.sockets.on("connection", function (socket) {
 		} else {
 			socket.emit("update", "Please enter a valid name first or room has been deleted.");
 		}
+		console.log(socket.room);
+		console.log(rooms);
 	});
 
 	socket.on("leaveRoom", function(id) {

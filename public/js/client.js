@@ -142,6 +142,10 @@ $(document).ready(function() {
       $("#msg").val("");
     }
   });
+  $("#people").on('click', '.invite', function() {
+    var name = $(this).siblings("span").text();
+    socket.emit("inviteRoom", name, new Date().getTime());
+  });
 
   //'is typing' message
   var typing = false;
@@ -163,7 +167,7 @@ $(document).ready(function() {
       }
     }
   });
-
+	
   socket.on("isTyping", function(data) {
     if (data.isTyping) {
       if ($("#"+data.person+"").length === 0) {
@@ -222,11 +226,12 @@ $(document).ready(function() {
     });
   });
 
-  $("#rooms").on('click', '.joinRoomBtn', function() {
+  $(".row").on('click', '.joinRoomBtn', function() {
     var roomName = $(this).siblings("span").text();
     var roomID = $(this).attr("id");
     socket.emit("joinRoom", roomID);
   });
+  
 
   $("#rooms").on('click', '.removeRoomBtn', function() {
     var roomName = $(this).siblings("span").text();
@@ -356,7 +361,7 @@ socket.on("history", function(data) {
       } else {
         html = "<img class=\"flag flag-"+obj.country+"\"/>";
       }
-      $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">whisper</a></li>");
+      $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">Whisper</a><a href=\"#\" class=\"invite btn btn-xs\">Invite to room</a></li>");
       //peopleOnline.push(obj.name);
     });
 
